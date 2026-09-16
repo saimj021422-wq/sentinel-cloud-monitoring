@@ -1,0 +1,5 @@
+.docker/
+.bash_history
+cloud-lab-backup/
+*.token_seed*
+*.log
