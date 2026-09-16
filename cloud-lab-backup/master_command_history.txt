@@ -1,0 +1,431 @@
+[200~sudo dnf update -y~
+sudo dnf update -y
+sudo dnf install -y httpd
+sudo systemcl start httpd
+sudo systemctl start httpd 
+sudo systemctl enable httpd
+echo "<h1>Cloud server is live! Built by Sai.</h1>" | sudo tee /var/www/html/index.html
+cat << 'EOF' > deploy.sh
+#!/bin/bash
+sudo dnf update -y
+cat << 'HTML' | sudo tee /var/www/html/index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background-color: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; text-align: center; }
+        h1 { color: #38bdf8; margin-bottom: 0.5rem; }
+        p { color: #94a3b8; font-size: 1.1rem; }
+        .status { display: inline-block; background-color: #059669; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Cloud Server v2.0</h1>
+        <p>Automated deployment pipeline complete.</p>
+        <span class="status">● System Operational</span>
+    </div>
+</body>
+</html>
+HTML
+sudo systemctl restart httpd
+EOF
+
+chmod +x deploy.sh
+./deploy.sh
+sudo tail -n 20 /ver/log/httpd/access_log
+sudo tail -n 20 /var/log/httpd/access_log
+sudo tail -f /var/log/httpd/access_log
+sudo dnf intall -y apel-release
+sudo dnf install -y epel-release
+sudo dnf install -y fail2ban
+cat << 'EOF' | sudo tee /etc/fail2ban/jail.local
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 5
+
+[sshd]
+enabled = true
+port = ssh
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+EOF
+
+sudo systemctl enable --now fail2ban
+sudo fail2ban-client status
+sudo fail2ban-client status sshd
+sudo dnf install -y docker
+sudo systemctl enable --now docker
+sudo usermod -aG docker ec2-user
+newgrp docker
+docker run hello-world
+docker run -d -p 8080:80 --name my-nginx-container nginx
+curl http://localhost:8080
+docker ps
+docker stop my-nginx-container
+curl http://localhost:8080
+docker start my-nginx-container
+curl http://localhost:8080
+docker rm my-nginx-container
+docker stop my-nginx-container
+docker rm my-nginx-container
+docker ps -a
+docker rm silly_lewin
+mkdir my-custom-app
+cd my-custom-app
+cat << 'EOF' > index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background-color: #0d1117; color: #58a6ff; font-family: monospace; text-align: center; padding-top: 50px; }
+        h1 { font-size: 3em; }
+        p { color: #8b949e; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <h1>SYSTEM ONLINE</h1>
+    <p>Custom Docker Container Deployed via AWS</p>
+</body>
+</html>
+EOF
+
+cat << 'EOF' > Dockerfile
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80
+EOF
+
+docker build -t my-custom-web-app .
+docker run -d -p 8080:80 --name custom-container my-custom-web-app
+curl http://localhost:8080
+cat << 'EOF' > index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background-color: #0d1117; color: #58a6ff; font-family: monospace; text-align: center; padding-top: 50px; }
+        h1 { font-size: 3em; margin-bottom: 10px; }
+        .status { display: inline-block; background-color: #238636; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; }
+        p { color: #8b949e; font-size: 1.2em; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>SYSTEM ONLINE</h1>
+    <div class="status">v2.0 - DEPLOYMENT SUCCESSFUL</div>
+    <p>Custom Docker Container Updated Live via AWS</p>
+</body>
+</html>
+EOF
+
+docker build -t my-custom-web-app:v2 .
+docker stop custom-container && docker rm custom-container
+docker run -d -p 8080:80 --name custom-container my-custom-web-app:v2
+curl http://localhost:8080
+cat << 'EOF' > docker-compose.yml
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    restart: always
+EOF
+
+docker stop custom-container && docker rm custom-container
+docker compose up -d --build
+docker-compose --version
+docker compose up -d --build
+docker-compose --version
+sudo yum install -y docker-compose-plugin
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+docker-compose up -d --build
+cat << 'EOF' > docker-compose.yml
+services:
+  web:
+    image: my-custom-web-app:v2
+    ports:
+      - "8080:80"
+    restart: always
+EOF
+
+docker-compose up -d
+docker-compose ps
+docker-compose down
+docker-compose up -d
+nano setup_server.sh
+./setup_server.sh
+chmod +x setup_server.sh
+./setup_server.sh
+sudo systemctl stop httpd
+sudo systemctl disable httpd
+sudo dnf install nginx -y
+sudo nano /etc/nginx/nginx.conf
+cat << 'EOF' | sudo tee /etc/nginx/nginx.conf
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log notice;
+pid /run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    server {
+        listen       80;
+        server_name  _;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+
+        location /app/ {
+            proxy_pass http://127.0.0.1:8080/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}
+EOF
+
+sudo nginx -t
+sudo systemctl restart nginx
+sudo dnf install firewalld -y
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-service=ssh
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-all
+nano docker-compose.yml
+[200~docker-compose down
+docker-compose up -d~
+docker-compose down
+docker-compose up -d
+sudo systemctl restart docker
+docker-compose up -d
+cat docker-compose.yml
+curl -I http://127.0.0.1:8080
+curl -I http://13.222.134.43:8080
+sudo dnf install -y certbot python3-certbot-nginx
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --reload
+sudo certbot --nginx -d YOURDOMAIN.duckdns.org
+sudo certbot --nginx -d YOURACTUALSUBDOMAIN.duckdns.org
+sudo certbot --nginx -d sai-cloud-lab.duckdns.org
+cat << 'EOF' | sudo tee /etc/nginx/nginx.conf
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log notice;
+pid /run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    server {
+        listen       80;
+        server_name  sai-cloud-lab.duckdns.org;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+
+        location /app/ {
+            proxy_pass http://127.0.0.1:8080/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}
+EOF
+
+sudo nginx -t
+sudo systemctl reload nginx
+sudo certbot install --cert-name sai-cloud-lab.duckdns.org
+cd ~/my-custom-app
+cat << 'EOF' > docker-compose.yml
+version: '3.8'
+
+services:
+  web-app:
+    build: .
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: always
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "127.0.0.1:9000:9000"
+
+  netdata:
+    image: netdata/netdata:latest
+    container_name: netdata
+    hostname: ec2-cloud-server
+    ports:
+      - "127.0.0.1:19999:19999"
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - netdatabit:/etc/netdata
+      - netdatahostlib:/var/lib/netdata
+      - netdatahostcache:/var/cache/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+
+volumes:
+  portainer_data:
+  netdatabit:
+  netdatahostlib:
+  netdatahostcache:
+EOF
+
+docker compose up -d
+docker ps
+cat << 'EOF' | sudo tee /etc/nginx/nginx.conf
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log notice;
+pid /run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    server {
+        listen       80;
+        server_name  sai-cloud-lab.duckdns.org;
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen       443 ssl;
+        server_name  sai-cloud-lab.duckdns.org;
+
+        ssl_certificate /etc/letsencrypt/live/sai-cloud-lab.duckdns.org/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/sai-cloud-lab.duckdns.org/privkey.pem;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+
+        location /app/ {
+            proxy_pass http://127.0.0.1:8080/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /portainer/ {
+            proxy_pass http://127.0.0.1:9000/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Connection "";
+            proxy_http_version 1.1;
+        }
+    }
+}
+EOF
+
+sudo nginx -t
+sudo systemctl reload nginx
+docker ps
+docker compose up -d
+docker ps
+cd ~/my-custom-app
+docker compose up -d
+docker ps
+docker run -d -p 127.0.0.1:9000:9000 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
+docker ps
+docker logs portainer 2>&1 | grep -i "token"
+cat << 'EOF' | sudo tee /etc/nginx/nginx.conf
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log notice;
+pid /run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    server {
+        listen       80;
+        server_name  sai-cloud-lab.duckdns.org;
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen       443 ssl;
+        server_name  sai-cloud-lab.duckdns.org;
+
+        ssl_certificate /etc/letsencrypt/live/sai-cloud-lab.duckdns.org/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/sai-cloud-lab.duckdns.org/privkey.pem;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+
+        location /app/ {
+            proxy_pass http://127.0.0.1:8080/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /portainer/ {
+            proxy_pass http://127.0.0.1:9000/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
+EOF
+
+sudo nginx -t
+sudo systemctl reload nginx
+docker stop portainer
+docker rm portainer
+docker run -d -p 127.0.0.1:9000:9000   --name portainer   --restart=always   -v /var/run/docker.sock:/var/run/docker.sock   -v portainer_data:/data   portainer/portainer-ce:latest
